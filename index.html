@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Explore narrative change in the highest-grossing films worldwide from 1977 to 2025.">
+    <meta name="description" content="An interactive narrative economics project exploring 980 blockbuster films from 1977 to 2025.">
     <title>Morality at the Box Office</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/main.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -24,12 +24,143 @@
       </div>
     </header>
 
-    <main id="main-content" class="page-shell">
-      <header class="page-intro">
-        <p class="eyebrow">1977–2025</p>
+    <main id="main-content" class="page-shell home-page">
+      <header class="home-hero">
         <h1>Morality at the Box Office</h1>
-        <p class="lede">How the narrative structure of the world’s highest-grossing films changed across nearly five decades.</p>
+        <p>Exploring narratives in 980 blockbuster films, 1977–2025.</p>
+        <p class="home-hero__byline">Cédric Rötheli</p>
       </header>
+
+      <article class="home-introduction" aria-label="Project introduction">
+        <p>
+          In the hope that my bachelor thesis would not simply disappear into a PDF and gather dust on a hard drive, I created this website. I should warn you: the thesis sits far enough outside the usual box of economics that, at times, you may be able to see the whole box office.
+        </p>
+
+        <h2>So, what is the idea?</h2>
+
+        <p>
+          Stories do more than entertain. They help organize attention, shape how we interpret events, and can ultimately influence beliefs and behavior. This idea sits at the heart of narrative economics: if stories affect how people understand the world, then the narratives that repeatedly reach millions of people are worth looking at. Commercially successful films are a particularly interesting case. They compete in an uncertain market for attention, are amplified through word of mouth and social influence, and the most successful among them achieve an unusually broad cultural reach.
+        </p>
+
+        <p>
+          But there is an obvious problem: how do you measure a story? Stories are complex, multidimensional objects, and reducing them to numbers inevitably means focusing on only part of what they contain. Recent advances in computational text analysis and large language models make it possible to approach this problem by identifying recurring narrative structures rather than trying to quantify an entire story at once. My thesis does this using plot synopses and subtitle material to examine how commercially successful films organize their central conflicts.
+        </p>
+
+        <p>
+          Morality at the Box Office explores the 20 highest-grossing films worldwide in every year from 1977 to 2025. Across 980 films, it asks a small set of deceptively simple questions: Who is threatened? Who protects them? How socially distant are they from the hero? And how large is the conflict? Together, these questions provide a way of comparing how films organize harm, protection, and moral concern across almost five decades.
+        </p>
+
+        <p>
+          The project draws inspiration from the concept of moral universalism developed by Benjamin Enke and co-authors: broadly, the distinction between moral concern that is concentrated on close in-groups and concern that extends across greater social distance. The measures used here are not a direct measure of moral universalism. Rather, they are a narrative analogue of that idea — a way of asking how broadly a film extends concern through the people who are threatened, the distance between them and the hero, and the scale of the conflict around them.
+        </p>
+      </article>
+
+      <section class="home-section home-concept" aria-labelledby="home-concept-title">
+        <header class="home-section__header">
+          <h2 id="home-concept-title">Looking at narrative structure</h2>
+          <p>The project represents each film through three roles and three relationships.</p>
+        </header>
+
+        <div class="home-concept__layout">
+          <div
+            class="home-narrative"
+            role="img"
+            aria-label="A triangle links Hero, Villain or Threat, and Victim. Hero to Victim represents Distance D. Villain or Threat to Victim represents Victim scale S. Hero to Villain or Threat represents Conflict scale C."
+          >
+            <div class="narrative-triangle__top">
+              <div class="narrative-triangle__vertex"><strong>Hero</strong></div>
+              <div class="narrative-triangle__vertex"><strong>Villain / Threat</strong></div>
+            </div>
+
+            <svg class="narrative-triangle__svg" viewBox="0 0 400 220" aria-hidden="true" focusable="false">
+              <path id="home-conflict-edge" class="narrative-triangle__edge" d="M 60 36 L 340 36"></path>
+              <path id="home-distance-edge" class="narrative-triangle__edge" d="M 60 36 L 200 184"></path>
+              <path id="home-victim-edge" class="narrative-triangle__edge" d="M 200 184 L 340 36"></path>
+
+              <text class="narrative-triangle__edge-label" dy="-8">
+                <textPath href="#home-conflict-edge" startOffset="50%" text-anchor="middle">Conflict scale (C)</textPath>
+              </text>
+              <text class="narrative-triangle__edge-label" dy="-8">
+                <textPath href="#home-distance-edge" startOffset="50%" text-anchor="middle">Distance (D)</textPath>
+              </text>
+              <text class="narrative-triangle__edge-label" dy="-8">
+                <textPath href="#home-victim-edge" startOffset="50%" text-anchor="middle">Victim scale (S)</textPath>
+              </text>
+
+              <circle class="narrative-triangle__point" cx="60" cy="36" r="4"></circle>
+              <circle class="narrative-triangle__point" cx="340" cy="36" r="4"></circle>
+              <circle class="narrative-triangle__point" cx="200" cy="184" r="4"></circle>
+            </svg>
+
+            <div class="narrative-triangle__vertex narrative-triangle__victim"><strong>Victim</strong></div>
+          </div>
+
+          <div class="home-scales">
+            <section class="home-scale" aria-labelledby="victim-level-scale-title">
+              <h3 id="victim-level-scale-title">Victim Level (S)</h3>
+              <dl>
+                <div><dt>0</dt><dd>Individual</dd></div>
+                <div><dt>1</dt><dd>Small group</dd></div>
+                <div><dt>2</dt><dd>Community / nation</dd></div>
+                <div><dt>3</dt><dd>Humanity / planet</dd></div>
+              </dl>
+            </section>
+
+            <section class="home-scale" aria-labelledby="hero-victim-scale-title">
+              <h3 id="hero-victim-scale-title">Hero–Victim Distance (D)</h3>
+              <dl>
+                <div><dt>0</dt><dd>Intimate</dd></div>
+                <div><dt>1</dt><dd>Local community</dd></div>
+                <div><dt>2</dt><dd>Same country / group</dd></div>
+                <div><dt>3</dt><dd>Distant / universal</dd></div>
+              </dl>
+            </section>
+
+            <section class="home-scale" aria-labelledby="conflict-scale-title">
+              <h3 id="conflict-scale-title">Conflict Scale (C)</h3>
+              <dl>
+                <div><dt>0</dt><dd>Local</dd></div>
+                <div><dt>1</dt><dd>National</dd></div>
+                <div><dt>2</dt><dd>International</dd></div>
+                <div><dt>3</dt><dd>Global / planetary</dd></div>
+              </dl>
+            </section>
+
+            <p class="home-scales__note">Moral Scope Index (MSI) = S + D, ranging from 0 to 6.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="home-next-steps">
+        <section class="home-next-step" aria-labelledby="home-trends-title">
+          <h2 id="home-trends-title">Explore the trends</h2>
+          <p>See how the narrative dimensions change across time and compare different subsets of films.</p>
+          <a class="home-text-link" href="trends.html">Explore the trends</a>
+        </section>
+
+        <section class="home-next-step" aria-labelledby="home-films-title">
+          <h2 id="home-films-title">Explore the films</h2>
+          <p>Search, filter and inspect the narrative structure of individual films in the sample.</p>
+          <a class="home-text-link" href="explore.html">Explore the films</a>
+        </section>
+      </div>
+
+      <section class="home-paper" aria-labelledby="home-paper-title">
+        <h2 id="home-paper-title">Interested in the full research?</h2>
+        <p>The complete bachelor thesis contains the theoretical framework, data, coding approach, validation and full results.</p>
+        <a class="home-text-link" href="paper.html">Read the full paper</a>
+      </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <div class="site-footer__text">
+          <p class="site-footer__title">Morality at the Box Office</p>
+          <p>Cédric Rötheli · 2026</p>
+          <p>Bachelor thesis project</p>
+        </div>
+        <a href="https://github.com/Cedric-Roetheli/morality-at-the-box-office">GitHub</a>
+      </div>
+    </footer>
   </body>
 </html>
