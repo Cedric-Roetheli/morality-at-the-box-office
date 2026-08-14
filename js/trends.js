@@ -1,30 +1,150 @@
 "use strict";
 
+const {
+  actorCategoryLabel,
+  clampYearRange,
+  filterFilmsByContent,
+  filterFilmsByYear,
+  getActorCategories,
+} = window.FilmFilterUtils;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-const trendChart = document.querySelector("[data-trend-chart]");
-
-const MORAL_SCOPE_CONFIG = {
-  id: "moral-scope-trend",
-  metric: "moral_scope_index",
+const SHARED_TREND_CONFIG = {
   xDomain: [1977, 2025],
-  yDomain: [0, 6],
   xTicks: [1977, 1985, 1993, 2001, 2009, 2017, 2025],
   compactXTicks: [1977, 1989, 2001, 2013, 2025],
-  yTicks: [0, 1, 2, 3, 4, 5, 6],
   xLabel: "Year",
-  yLabel: "Average MSI",
   yearlyLabel: "Yearly mean",
   movingAverageLabel: "Centered 5-year average",
-  tooltipMetricLabel: "Mean MSI",
-  ariaTitle: "Moral Scope Over Time",
-  ariaDescription: "Yearly mean Moral Scope Index and centered 5-year moving average from 1977 to 2025.",
 };
 
-if (trendChart) {
-  loadTrendData(trendChart, MORAL_SCOPE_CONFIG);
+const METRIC_CONFIGS = [
+  {
+    ...SHARED_TREND_CONFIG,
+    id: "moral-scope-trend",
+    metric: "moral_scope_index",
+    title: "Moral Scope Over Time",
+    subtitle: "Average Moral Scope Index among the highest-grossing films worldwide, 1977–2025.",
+    yDomain: [0, 6],
+    yTicks: [0, 1, 2, 3, 4, 5, 6],
+    yLabel: "Average MSI",
+    tooltipMetricLabel: "Mean MSI",
+    scaleDescription:
+      "0–6 scale. Moral Scope combines Victim Level and Hero–Victim Distance (S + D); higher values indicate broader moral scope.",
+  },
+  {
+    ...SHARED_TREND_CONFIG,
+    id: "victim-level-trend",
+    metric: "victim_level",
+    title: "Who is at stake?",
+    subtitle: "Average scale of the main threatened victim.",
+    yDomain: [0, 3],
+    yTicks: [0, 1, 2, 3],
+    yLabel: "Average victim level",
+    tooltipMetricLabel: "Mean victim level",
+    scaleLabels: [
+      { value: 0, label: "Individual" },
+      { value: 1, label: "Small group" },
+      { value: 2, label: "Community / nation" },
+      { value: 3, label: "Humanity / planet" },
+    ],
+  },
+  {
+    ...SHARED_TREND_CONFIG,
+    id: "hero-victim-distance-trend",
+    metric: "hero_victim_distance",
+    title: "How distant is the victim from the hero?",
+    subtitle: "Average social distance between the hero and the main threatened victim.",
+    yDomain: [0, 3],
+    yTicks: [0, 1, 2, 3],
+    yLabel: "Average distance",
+    tooltipMetricLabel: "Mean distance",
+    scaleLabels: [
+      { value: 0, label: "Intimate" },
+      { value: 1, label: "Local community" },
+      { value: 2, label: "Same country / group" },
+      { value: 3, label: "Distant / universal" },
+    ],
+  },
+  {
+    ...SHARED_TREND_CONFIG,
+    id: "conflict-scale-trend",
+    metric: "conflict_scale",
+    title: "How large is the conflict?",
+    subtitle: "Average geographic scale of the central conflict.",
+    yDomain: [0, 3],
+    yTicks: [0, 1, 2, 3],
+    yLabel: "Average conflict scale",
+    tooltipMetricLabel: "Mean conflict scale",
+    scaleLabels: [
+      { value: 0, label: "Local" },
+      { value: 1, label: "National" },
+      { value: 2, label: "International" },
+      { value: 3, label: "Global / planetary" },
+    ],
+  },
+];
+
+const CONTENT_FILTER_CONFIGS = [
+  {
+    key: "moralScope",
+    options: Array.from({ length: 7 }, (_, value) => ({ value, label: String(value) })),
+  },
+  {
+    key: "victimLevel",
+    options: [
+      { value: 0, label: "0 — Individual" },
+      { value: 1, label: "1 — Small group" },
+      { value: 2, label: "2 — Community / nation" },
+      { value: 3, label: "3 — Humanity / planet" },
+    ],
+  },
+  { key: "heroType", actorField: "hero_actor" },
+  { key: "villainType", actorField: "villain_actor" },
+  {
+    key: "conflictScale",
+    options: [
+      { value: 0, label: "0 — Local" },
+      { value: 1, label: "1 — National" },
+      { value: 2, label: "2 — International" },
+      { value: 3, label: "3 — Global / planetary" },
+    ],
+  },
+];
+
+const trendSections = document.querySelectorAll("[data-trend-section]");
+const trendYearControls = {
+  yearMin: document.querySelector("[data-trend-year-min]"),
+  yearMax: document.querySelector("[data-trend-year-max]"),
+};
+const trendMultiFilterControls = [...document.querySelectorAll("[data-trend-multi-filter]")]
+  .map((element) => ({
+    element,
+    key: element.dataset.filterKey,
+    allLabel: element.dataset.allLabel,
+    details: element.querySelector("[data-trend-multi-details]"),
+    summary: element.querySelector("[data-trend-multi-summary]"),
+    options: element.querySelector("[data-trend-multi-options]"),
+  }));
+const trendMultiFiltersByKey = new Map(
+  trendMultiFilterControls.map((control) => [control.key, control]),
+);
+const trendYearOutput = document.querySelector("[data-trend-year-output]");
+const trendResultCount = document.querySelector("[data-trend-result-count]");
+const trendResetButton = document.querySelector("[data-trend-reset]");
+const trendFilterStatus = document.querySelector("[data-trend-filter-status]");
+const trendFiltersReady = Object.values(trendYearControls).every(Boolean)
+  && trendMultiFilterControls.length === CONTENT_FILTER_CONFIGS.length
+  && trendMultiFilterControls.every((control) => (
+    control.key && control.allLabel && control.details && control.summary && control.options
+  ))
+  && CONTENT_FILTER_CONFIGS.every((config) => trendMultiFiltersByKey.has(config.key))
+  && [trendYearOutput, trendResultCount, trendResetButton, trendFilterStatus].every(Boolean);
+
+if (trendSections.length > 0 && trendFiltersReady) {
+  loadTrendData();
 }
 
-async function loadTrendData(container, config) {
+async function loadTrendData() {
   try {
     const response = await fetch("data/films.json");
 
@@ -38,11 +158,285 @@ async function loadTrendData(container, config) {
       throw new Error("Film data is not an array.");
     }
 
-    const yearlyData = computeYearlyMeans(films, config.metric);
-    const movingAverageData = computeCenteredMovingAverage(yearlyData, 5);
-    renderTrendChart(container, yearlyData, movingAverageData, config);
+    initializeTrendFilters(films);
   } catch (error) {
     console.error(error);
+    trendResultCount.textContent = "Films could not be loaded.";
+    showAllChartErrors();
+  }
+}
+
+function initializeTrendFilters(films) {
+  const updateTrends = () => {
+    const selectedYearRange = getSelectedYearRange();
+    const contentFilters = getSelectedContentFilters();
+    const baselineFilms = filterFilmsByYear(films, ...selectedYearRange);
+    const filteredFilms = filterFilmsByContent(baselineFilms, contentFilters);
+    const showBaseline = hasActiveContentFilters(contentFilters);
+
+    trendYearOutput.textContent = selectedYearRange.join("–");
+    trendResultCount.textContent = createTrendResultSummary(
+      filteredFilms.length,
+      baselineFilms.length,
+      showBaseline,
+    );
+
+    if (filteredFilms.length === 0) {
+      trendFilterStatus.hidden = false;
+      setTrendSectionsHidden(true);
+      return;
+    }
+
+    trendFilterStatus.hidden = true;
+    setTrendSectionsHidden(false);
+    renderAllTrendCharts(filteredFilms, baselineFilms, selectedYearRange, showBaseline);
+  };
+
+  initializeMultiFilterControls(films, updateTrends);
+  initializeMultiFilterDisclosureBehavior();
+
+  trendYearControls.yearMin.addEventListener("input", () => {
+    clampYearRange(trendYearControls.yearMin, trendYearControls.yearMax, trendYearControls.yearMin);
+    updateTrends();
+  });
+  trendYearControls.yearMax.addEventListener("input", () => {
+    clampYearRange(trendYearControls.yearMin, trendYearControls.yearMax, trendYearControls.yearMax);
+    updateTrends();
+  });
+
+  trendResetButton.addEventListener("click", () => {
+    resetTrendFilters();
+    updateTrends();
+  });
+  trendResetButton.disabled = false;
+  updateTrends();
+}
+
+function initializeMultiFilterControls(films, updateTrends) {
+  for (const config of CONTENT_FILTER_CONFIGS) {
+    const control = trendMultiFiltersByKey.get(config.key);
+    const fragment = document.createDocumentFragment();
+
+    for (const option of getContentFilterOptions(config, films)) {
+      fragment.append(createMultiFilterOption(option));
+    }
+
+    control.options.replaceChildren(fragment);
+    control.options.addEventListener("change", (event) => {
+      if (event.target.matches('input[type="checkbox"]')) {
+        updateMultiFilterSummary(control);
+        updateTrends();
+      }
+    });
+    updateMultiFilterSummary(control);
+  }
+}
+
+function getContentFilterOptions(config, films) {
+  if (config.options) {
+    return config.options;
+  }
+
+  return getActorCategories(films, config.actorField)
+    .map((category) => ({ value: category, label: actorCategoryLabel(category) }));
+}
+
+function createMultiFilterOption({ value, label }) {
+  const optionLabel = document.createElement("label");
+  const checkbox = document.createElement("input");
+  const text = document.createElement("span");
+
+  checkbox.type = "checkbox";
+  checkbox.value = value;
+  checkbox.dataset.optionLabel = label;
+  text.textContent = label;
+  optionLabel.append(checkbox, text);
+  return optionLabel;
+}
+
+function initializeMultiFilterDisclosureBehavior() {
+  for (const control of trendMultiFilterControls) {
+    control.details.addEventListener("toggle", () => {
+      if (!control.details.open) {
+        return;
+      }
+
+      for (const otherControl of trendMultiFilterControls) {
+        if (otherControl !== control) {
+          otherControl.details.removeAttribute("open");
+        }
+      }
+    });
+
+    control.details.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && control.details.open) {
+        control.details.removeAttribute("open");
+        control.details.querySelector("summary").focus();
+        event.preventDefault();
+      }
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    for (const control of trendMultiFilterControls) {
+      if (control.details.open && !control.element.contains(event.target)) {
+        control.details.removeAttribute("open");
+      }
+    }
+  });
+}
+
+function getSelectedYearRange() {
+  return [Number(trendYearControls.yearMin.value), Number(trendYearControls.yearMax.value)];
+}
+
+function getSelectedContentFilters() {
+  return Object.fromEntries(
+    trendMultiFilterControls.map((control) => [control.key, getSelectedValues(control)]),
+  );
+}
+
+function getSelectedValues(control) {
+  return [...control.options.querySelectorAll('input[type="checkbox"]:checked')]
+    .map((checkbox) => checkbox.value);
+}
+
+function hasActiveContentFilters(filters) {
+  return Object.values(filters).some((selectedValues) => selectedValues.length > 0);
+}
+
+function updateMultiFilterSummary(control) {
+  const selectedCheckboxes = [...control.options.querySelectorAll('input[type="checkbox"]:checked')];
+
+  if (selectedCheckboxes.length === 0) {
+    control.summary.textContent = control.allLabel;
+  } else if (selectedCheckboxes.length === 1) {
+    control.summary.textContent = selectedCheckboxes[0].dataset.optionLabel;
+  } else {
+    control.summary.textContent = `${selectedCheckboxes.length} selected`;
+  }
+}
+
+function createTrendResultSummary(filteredCount, baselineCount, hasContentFilters) {
+  if (hasContentFilters) {
+    return `${filteredCount} of ${formatFilmCount(baselineCount)} in selected period`;
+  }
+
+  return `${formatFilmCount(baselineCount)} in selected period`;
+}
+
+function formatFilmCount(count) {
+  return `${count} ${count === 1 ? "film" : "films"}`;
+}
+
+function resetTrendFilters() {
+  trendYearControls.yearMin.value = trendYearControls.yearMin.min;
+  trendYearControls.yearMax.value = trendYearControls.yearMax.max;
+
+  for (const control of trendMultiFilterControls) {
+    for (const checkbox of control.options.querySelectorAll('input[type="checkbox"]')) {
+      checkbox.checked = false;
+    }
+
+    control.details.removeAttribute("open");
+    updateMultiFilterSummary(control);
+  }
+}
+
+function setTrendSectionsHidden(hidden) {
+  for (const section of trendSections) {
+    section.hidden = hidden;
+  }
+}
+
+function renderAllTrendCharts(filteredFilms, baselineFilms, selectedYearRange, showBaseline) {
+  for (const config of METRIC_CONFIGS) {
+    const section = document.querySelector(`[data-trend-section="${config.id}"]`);
+
+    if (!section) {
+      continue;
+    }
+
+    const container = section.querySelector("[data-trend-chart]");
+    const title = section.querySelector("[data-trend-title]");
+    const subtitle = section.querySelector("[data-trend-subtitle]");
+    const scaleContainer = section.querySelector("[data-trend-scale]");
+    const selectedYearlyData = computeYearlyMeans(filteredFilms, config.metric);
+    const selectedMovingAverageData = computeCenteredMovingAverage(selectedYearlyData, 5);
+    const baselineYearlyData = computeYearlyMeans(baselineFilms, config.metric);
+    const baselineMovingAverageData = computeCenteredMovingAverage(baselineYearlyData, 5);
+    const chartConfig = createChartConfig(config, selectedYearRange);
+
+    title.textContent = config.title;
+    subtitle.textContent = config.subtitle;
+    renderScaleExplanation(scaleContainer, config);
+    renderTrendChart(
+      container,
+      selectedYearlyData,
+      selectedMovingAverageData,
+      baselineMovingAverageData,
+      chartConfig,
+      showBaseline,
+    );
+  }
+}
+
+function createChartConfig(config, selectedYearRange) {
+  return {
+    ...config,
+    xDomain: selectedYearRange,
+    xTicks: createYearTicks(selectedYearRange, 7),
+    compactXTicks: createYearTicks(selectedYearRange, 5),
+  };
+}
+
+function createYearTicks([startYear, endYear], maximumTickCount) {
+  if (startYear === endYear) {
+    return [startYear];
+  }
+
+  const intervalCount = Math.min(maximumTickCount - 1, endYear - startYear);
+  const ticks = [];
+
+  for (let index = 0; index <= intervalCount; index += 1) {
+    const position = index / intervalCount;
+    ticks.push(Math.round(startYear + (endYear - startYear) * position));
+  }
+
+  return [...new Set(ticks)];
+}
+
+function renderScaleExplanation(container, config) {
+  container.replaceChildren();
+
+  if (config.scaleDescription) {
+    const description = document.createElement("p");
+    description.className = "trend-scale__note";
+    description.textContent = config.scaleDescription;
+    container.append(description);
+    return;
+  }
+
+  const labels = document.createElement("dl");
+  labels.className = "trend-scale__labels";
+
+  for (const { value, label } of config.scaleLabels) {
+    const item = document.createElement("div");
+    const term = document.createElement("dt");
+    const definition = document.createElement("dd");
+
+    term.textContent = value;
+    definition.textContent = `— ${label}`;
+    item.append(term, definition);
+    labels.append(item);
+  }
+
+  container.append(labels);
+}
+
+function showAllChartErrors() {
+  for (const section of trendSections) {
+    const container = section.querySelector("[data-trend-chart]");
     showChartError(container);
   }
 }
@@ -99,8 +493,15 @@ function computeCenteredMovingAverage(yearlyData, windowSize) {
   });
 }
 
-function renderTrendChart(container, yearlyData, movingAverageData, config) {
-  if (yearlyData.length === 0) {
+function renderTrendChart(
+  container,
+  selectedYearlyData,
+  selectedMovingAverageData,
+  baselineMovingAverageData,
+  config,
+  showBaseline,
+) {
+  if (selectedYearlyData.length === 0) {
     showEmptyChart(container);
     return;
   }
@@ -115,8 +516,9 @@ function renderTrendChart(container, yearlyData, movingAverageData, config) {
   const plotHeight = height - margin.top - margin.bottom;
   const xScale = createLinearScale(config.xDomain, [margin.left, margin.left + plotWidth]);
   const yScale = createLinearScale(config.yDomain, [margin.top + plotHeight, margin.top]);
-  const yearlySeries = completeYearSeries(yearlyData, config.xDomain);
-  const movingAverageSeries = completeYearSeries(movingAverageData, config.xDomain);
+  const selectedYearlySeries = completeYearSeries(selectedYearlyData, config.xDomain);
+  const selectedMovingAverageSeries = completeYearSeries(selectedMovingAverageData, config.xDomain);
+  const baselineMovingAverageSeries = completeYearSeries(baselineMovingAverageData, config.xDomain);
   const svg = createSvgElement("svg");
   const tooltip = createTooltip();
   const titleId = `${config.id}-title`;
@@ -127,18 +529,40 @@ function renderTrendChart(container, yearlyData, movingAverageData, config) {
   svg.setAttribute("role", "group");
   svg.setAttribute("aria-labelledby", `${titleId} ${descriptionId}`);
   svg.append(
-    createSvgTextElement("title", titleId, config.ariaTitle),
-    createSvgTextElement("desc", descriptionId, config.ariaDescription),
+    createSvgTextElement("title", titleId, config.title),
+    createSvgTextElement(
+      "desc",
+      descriptionId,
+      createChartDescription(config, showBaseline),
+    ),
   );
 
   renderAxes(svg, xScale, yScale, width, height, margin, compact, config);
+  if (showBaseline) {
+    svg.append(
+      createLinePath(
+        baselineMovingAverageSeries,
+        xScale,
+        yScale,
+        "trend-chart__baseline-line",
+      ),
+    );
+  }
   svg.append(
-    createLinePath(yearlySeries, xScale, yScale, "trend-chart__yearly-line"),
-    createLinePath(movingAverageSeries, xScale, yScale, "trend-chart__moving-line"),
+    createLinePath(selectedYearlySeries, xScale, yScale, "trend-chart__yearly-line"),
+    createLinePath(selectedMovingAverageSeries, xScale, yScale, "trend-chart__moving-line"),
   );
-  renderYearlyPoints(svg, tooltip, container, yearlyData, xScale, yScale, config);
+  renderYearlyPoints(svg, tooltip, container, selectedYearlyData, xScale, yScale, config);
 
-  container.replaceChildren(createLegend(config), svg, tooltip);
+  container.replaceChildren(createLegend(config, showBaseline), svg, tooltip);
+}
+
+function createChartDescription(config, showBaseline) {
+  const comparisonDescription = showBaseline
+    ? " The centered 5-year average for all films in the selected period is shown as a comparison."
+    : "";
+
+  return `${config.subtitle} The chart compares selected yearly means with a centered 5-year moving average.${comparisonDescription}`;
 }
 
 function completeYearSeries(data, [startYear, endYear]) {
@@ -153,6 +577,11 @@ function completeYearSeries(data, [startYear, endYear]) {
 }
 
 function createLinearScale([domainMin, domainMax], [rangeMin, rangeMax]) {
+  if (domainMin === domainMax) {
+    const rangeMidpoint = rangeMin + (rangeMax - rangeMin) / 2;
+    return () => rangeMidpoint;
+  }
+
   return (value) => {
     const ratio = (value - domainMin) / (domainMax - domainMin);
     return rangeMin + ratio * (rangeMax - rangeMin);
@@ -252,14 +681,26 @@ function renderYearlyPoints(svg, tooltip, container, data, xScale, yScale, confi
   }
 }
 
-function createLegend(config) {
+function createLegend(config, showBaseline) {
   const legend = document.createElement("ul");
   legend.className = "trend-chart__legend";
   legend.setAttribute("aria-label", "Chart legend");
-  legend.append(
-    createLegendItem(config.yearlyLabel, "trend-chart__legend-line--yearly"),
-    createLegendItem(config.movingAverageLabel, "trend-chart__legend-line--moving"),
-  );
+  legend.append(createLegendItem(config.yearlyLabel, "trend-chart__legend-line--yearly"));
+
+  if (showBaseline) {
+    legend.append(
+      createLegendItem("Selected sample (5-year average)", "trend-chart__legend-line--moving"),
+      createLegendItem(
+        "All films in selected period (5-year average)",
+        "trend-chart__legend-line--baseline",
+      ),
+    );
+  } else {
+    legend.append(
+      createLegendItem(config.movingAverageLabel, "trend-chart__legend-line--moving"),
+    );
+  }
+
   return legend;
 }
 

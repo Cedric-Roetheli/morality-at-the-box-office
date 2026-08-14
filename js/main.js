@@ -1,5 +1,6 @@
 "use strict";
 
+const { clampYearRange, filterFilms, populateActorOptions } = window.FilmFilterUtils;
 const filmList = document.querySelector("[data-film-list]");
 const filmResultCount = document.querySelector("[data-film-result-count]");
 const filterControls = {
@@ -133,68 +134,6 @@ function createFilmFact(label, value) {
 
 function displayValue(value) {
   return value ?? "Not available";
-}
-
-function clampYearRange(minInput, maxInput, changedInput) {
-  if (Number(minInput.value) <= Number(maxInput.value)) {
-    return;
-  }
-
-  if (changedInput === minInput) {
-    minInput.value = maxInput.value;
-  } else {
-    maxInput.value = minInput.value;
-  }
-}
-
-function populateActorOptions(select, films, field) {
-  const categories = [...new Set(films.map((film) => film[field]).filter(Boolean))]
-    .sort((first, second) => actorCategoryLabel(first).localeCompare(actorCategoryLabel(second)));
-  const fragment = document.createDocumentFragment();
-
-  for (const category of categories) {
-    const option = document.createElement("option");
-    option.value = category;
-    option.textContent = actorCategoryLabel(category);
-    fragment.append(option);
-  }
-
-  select.append(fragment);
-}
-
-function actorCategoryLabel(category) {
-  const labels = {
-    individual_civilian: "Individual civilian",
-    collective_civilian: "Civilian collective",
-    state_military: "State / military",
-    corporate_institutional: "Corporate / institutional",
-    non_human: "Non-human",
-    none: "None / unclear",
-  };
-
-  return labels[category] ?? category.replaceAll("_", " ");
-}
-
-function filterFilms(films, filters) {
-  const normalizedSearch = filters.searchTerm.trim().toLocaleLowerCase();
-  return films.filter((film) => {
-    const matchesTitle = film.title.toLocaleLowerCase().includes(normalizedSearch);
-    return matchesTitle
-      && matchesYearRange(film.year, filters.yearMin, filters.yearMax)
-      && matchesFilter(film.moral_scope_index, filters.moralScope)
-      && matchesFilter(film.victim_level, filters.victimLevel)
-      && matchesFilter(film.hero_actor, filters.heroType)
-      && matchesFilter(film.villain_actor, filters.villainType)
-      && matchesFilter(film.conflict_scale, filters.conflictScale);
-  });
-}
-
-function matchesYearRange(year, minimumYear, maximumYear) {
-  return year !== null && year !== undefined && year >= minimumYear && year <= maximumYear;
-}
-
-function matchesFilter(value, selectedValue) {
-  return selectedValue === "" || (value !== null && value !== undefined && String(value) === selectedValue);
 }
 
 function showResultCount(element, count) {

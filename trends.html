@@ -6,6 +6,7 @@
     <meta name="description" content="Explore narrative trends in the highest-grossing films worldwide from 1977 to 2025.">
     <title>Trends | Morality at the Box Office</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/filter-utils.js" defer></script>
     <script src="js/trends.js" defer></script>
   </head>
   <body>
@@ -31,11 +32,128 @@
         <p class="lede">Narrative change across the highest-grossing films worldwide.</p>
       </header>
 
-      <section class="trend-section" aria-labelledby="moral-scope-title">
-        <header class="trend-section__header">
-          <h2 id="moral-scope-title">Moral Scope Over Time</h2>
-          <p>Average Moral Scope Index among the highest-grossing films worldwide, 1977–2025.</p>
+      <section class="trend-filters" aria-labelledby="trend-filters-title">
+        <header class="trend-filters__header">
+          <div>
+            <h2 id="trend-filters-title">Filter trends</h2>
+            <p class="trend-filters__summary" data-trend-result-count aria-live="polite">Loading films...</p>
+          </div>
+          <button class="trend-filters__reset" type="button" data-trend-reset disabled>Reset filters</button>
         </header>
+
+        <div class="trend-filters__controls">
+          <div class="film-control film-year-range trend-filters__year" role="group" aria-labelledby="trend-year-range-label">
+            <div class="film-year-range__header">
+              <span id="trend-year-range-label">Year range</span>
+              <output for="trend-year-min trend-year-max" data-trend-year-output aria-live="polite">1977–2025</output>
+            </div>
+            <div class="film-year-range__sliders">
+              <div class="film-year-range__slider">
+                <label for="trend-year-min">Minimum year</label>
+                <input id="trend-year-min" type="range" min="1977" max="2025" value="1977" data-trend-year-min>
+              </div>
+              <div class="film-year-range__slider">
+                <label for="trend-year-max">Maximum year</label>
+                <input id="trend-year-max" type="range" min="1977" max="2025" value="2025" data-trend-year-max>
+              </div>
+            </div>
+          </div>
+
+          <div class="trend-multi-filter" data-trend-multi-filter data-filter-key="moralScope" data-all-label="All moral scope scores">
+            <span class="trend-multi-filter__label" id="trend-moral-scope-label">Moral Scope</span>
+            <details data-trend-multi-details>
+              <summary aria-labelledby="trend-moral-scope-label trend-moral-scope-summary">
+                <span id="trend-moral-scope-summary" data-trend-multi-summary>All moral scope scores</span>
+              </summary>
+              <fieldset aria-labelledby="trend-moral-scope-label" data-trend-multi-options></fieldset>
+            </details>
+          </div>
+
+          <div class="trend-multi-filter" data-trend-multi-filter data-filter-key="victimLevel" data-all-label="All victim levels">
+            <span class="trend-multi-filter__label" id="trend-victim-level-label">Victim Level</span>
+            <details data-trend-multi-details>
+              <summary aria-labelledby="trend-victim-level-label trend-victim-level-summary">
+                <span id="trend-victim-level-summary" data-trend-multi-summary>All victim levels</span>
+              </summary>
+              <fieldset aria-labelledby="trend-victim-level-label" data-trend-multi-options></fieldset>
+            </details>
+          </div>
+
+          <div class="trend-multi-filter" data-trend-multi-filter data-filter-key="heroType" data-all-label="All hero types">
+            <span class="trend-multi-filter__label" id="trend-hero-type-label">Hero Type</span>
+            <details data-trend-multi-details>
+              <summary aria-labelledby="trend-hero-type-label trend-hero-type-summary">
+                <span id="trend-hero-type-summary" data-trend-multi-summary>All hero types</span>
+              </summary>
+              <fieldset aria-labelledby="trend-hero-type-label" data-trend-multi-options></fieldset>
+            </details>
+          </div>
+
+          <div class="trend-multi-filter" data-trend-multi-filter data-filter-key="villainType" data-all-label="All villain types">
+            <span class="trend-multi-filter__label" id="trend-villain-type-label">Villain Type</span>
+            <details data-trend-multi-details>
+              <summary aria-labelledby="trend-villain-type-label trend-villain-type-summary">
+                <span id="trend-villain-type-summary" data-trend-multi-summary>All villain types</span>
+              </summary>
+              <fieldset aria-labelledby="trend-villain-type-label" data-trend-multi-options></fieldset>
+            </details>
+          </div>
+
+          <div class="trend-multi-filter" data-trend-multi-filter data-filter-key="conflictScale" data-all-label="All conflict scales">
+            <span class="trend-multi-filter__label" id="trend-conflict-scale-label">Conflict Scale</span>
+            <details data-trend-multi-details>
+              <summary aria-labelledby="trend-conflict-scale-label trend-conflict-scale-summary">
+                <span id="trend-conflict-scale-summary" data-trend-multi-summary>All conflict scales</span>
+              </summary>
+              <fieldset aria-labelledby="trend-conflict-scale-label" data-trend-multi-options></fieldset>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <p class="trend-filter-status" data-trend-filter-status aria-live="polite" hidden>
+        No films match the selected filters.
+      </p>
+
+      <section class="trend-section" aria-labelledby="moral-scope-title" data-trend-section="moral-scope-trend">
+        <header class="trend-section__header">
+          <h2 id="moral-scope-title" data-trend-title>Moral Scope Over Time</h2>
+          <p data-trend-subtitle>Average Moral Scope Index among the highest-grossing films worldwide, 1977–2025.</p>
+        </header>
+        <div class="trend-scale" data-trend-scale></div>
+        <div class="trend-chart" data-trend-chart>
+          <p class="trend-chart__status">Loading chart...</p>
+        </div>
+      </section>
+
+      <section class="trend-section" aria-labelledby="victim-level-title" data-trend-section="victim-level-trend">
+        <header class="trend-section__header">
+          <h2 id="victim-level-title" data-trend-title>Who is at stake?</h2>
+          <p data-trend-subtitle>Average scale of the main threatened victim.</p>
+        </header>
+        <div class="trend-scale" data-trend-scale></div>
+        <div class="trend-chart" data-trend-chart>
+          <p class="trend-chart__status">Loading chart...</p>
+        </div>
+      </section>
+
+      <section class="trend-section" aria-labelledby="hero-victim-distance-title" data-trend-section="hero-victim-distance-trend">
+        <header class="trend-section__header">
+          <h2 id="hero-victim-distance-title" data-trend-title>How distant is the victim from the hero?</h2>
+          <p data-trend-subtitle>Average social distance between the hero and the main threatened victim.</p>
+        </header>
+        <div class="trend-scale" data-trend-scale></div>
+        <div class="trend-chart" data-trend-chart>
+          <p class="trend-chart__status">Loading chart...</p>
+        </div>
+      </section>
+
+      <section class="trend-section" aria-labelledby="conflict-scale-title" data-trend-section="conflict-scale-trend">
+        <header class="trend-section__header">
+          <h2 id="conflict-scale-title" data-trend-title>How large is the conflict?</h2>
+          <p data-trend-subtitle>Average geographic scale of the central conflict.</p>
+        </header>
+        <div class="trend-scale" data-trend-scale></div>
         <div class="trend-chart" data-trend-chart>
           <p class="trend-chart__status">Loading chart...</p>
         </div>
