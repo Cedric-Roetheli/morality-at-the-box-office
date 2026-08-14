@@ -1,14 +1,24 @@
 "use strict";
 
 const filmList = document.querySelector("[data-film-list]");
-const filmSearch = document.querySelector("[data-film-search]");
 const filmResultCount = document.querySelector("[data-film-result-count]");
+const filterControls = {
+  search: document.querySelector("[data-film-search]"),
+  yearMin: document.querySelector("[data-film-year-min]"),
+  yearMax: document.querySelector("[data-film-year-max]"),
+  moralScope: document.querySelector("[data-film-moral-scope]"),
+  victimLevel: document.querySelector("[data-film-victim-level]"),
+  heroType: document.querySelector("[data-film-hero-type]"),
+  villainType: document.querySelector("[data-film-villain-type]"),
+  conflictScale: document.querySelector("[data-film-conflict-scale]"),
+};
+const yearRangeOutput = document.querySelector("[data-film-year-output]");
 
-if (filmList && filmSearch && filmResultCount) {
-  loadFilms(filmList, filmSearch, filmResultCount);
+if (filmList && filmResultCount && yearRangeOutput && Object.values(filterControls).every(Boolean)) {
+  loadFilms(filmList, filterControls, yearRangeOutput, filmResultCount);
 }
 
-async function loadFilms(container, searchInput, resultCount) {
+async function loadFilms(container, controls, rangeOutput, resultCount) {
   try {
     const response = await fetch("data/films.json");
 
@@ -23,13 +33,43 @@ async function loadFilms(container, searchInput, resultCount) {
     }
 
     films.sort((first, second) => first.year - second.year || first.rank - second.rank);
+    populateActorOptions(controls.heroType, films, "hero_actor");
+    populateActorOptions(controls.villainType, films, "villain_actor");
+
     const updateResults = () => {
-      const matchingFilms = filterFilms(films, searchInput.value);
+      const matchingFilms = filterFilms(films, {
+        searchTerm: controls.search.value,
+        yearMin: Number(controls.yearMin.value),
+        yearMax: Number(controls.yearMax.value),
+        moralScope: controls.moralScope.value,
+        victimLevel: controls.victimLevel.value,
+        heroType: controls.heroType.value,
+        villainType: controls.villainType.value,
+        conflictScale: controls.conflictScale.value,
+      });
+      rangeOutput.textContent = `${controls.yearMin.value}–${controls.yearMax.value}`;
       renderFilms(container, matchingFilms);
       showResultCount(resultCount, matchingFilms.length);
     };
 
-    searchInput.addEventListener("input", updateResults);
+    controls.search.addEventListener("input", updateResults);
+    controls.yearMin.addEventListener("input", () => {
+      clampYearRange(controls.yearMin, controls.yearMax, controls.yearMin);
+      updateResults();
+    });
+    controls.yearMax.addEventListener("input", () => {
+      clampYearRange(controls.yearMin, controls.yearMax, controls.yearMax);
+      updateResults();
+    });
+    for (const select of [
+      controls.moralScope,
+      controls.victimLevel,
+      controls.heroType,
+      controls.villainType,
+      controls.conflictScale,
+    ]) {
+      select.addEventListener("change", updateResults);
+    }
     updateResults();
   } catch (error) {
     console.error(error);
@@ -95,9 +135,66 @@ function displayValue(value) {
   return value ?? "Not available";
 }
 
-function filterFilms(films, searchTerm) {
-  const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
-  return films.filter((film) => film.title.toLocaleLowerCase().includes(normalizedSearch));
+function clampYearRange(minInput, maxInput, changedInput) {
+  if (Number(minInput.value) <= Number(maxInput.value)) {
+    return;
+  }
+
+  if (changedInput === minInput) {
+    minInput.value = maxInput.value;
+  } else {
+    maxInput.value = minInput.value;
+  }
+}
+
+function populateActorOptions(select, films, field) {
+  const categories = [...new Set(films.map((film) => film[field]).filter(Boolean))]
+    .sort((first, second) => actorCategoryLabel(first).localeCompare(actorCategoryLabel(second)));
+  const fragment = document.createDocumentFragment();
+
+  for (const category of categories) {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = actorCategoryLabel(category);
+    fragment.append(option);
+  }
+
+  select.append(fragment);
+}
+
+function actorCategoryLabel(category) {
+  const labels = {
+    individual_civilian: "Individual civilian",
+    collective_civilian: "Civilian collective",
+    state_military: "State / military",
+    corporate_institutional: "Corporate / institutional",
+    non_human: "Non-human",
+    none: "None / unclear",
+  };
+
+  return labels[category] ?? category.replaceAll("_", " ");
+}
+
+function filterFilms(films, filters) {
+  const normalizedSearch = filters.searchTerm.trim().toLocaleLowerCase();
+  return films.filter((film) => {
+    const matchesTitle = film.title.toLocaleLowerCase().includes(normalizedSearch);
+    return matchesTitle
+      && matchesYearRange(film.year, filters.yearMin, filters.yearMax)
+      && matchesFilter(film.moral_scope_index, filters.moralScope)
+      && matchesFilter(film.victim_level, filters.victimLevel)
+      && matchesFilter(film.hero_actor, filters.heroType)
+      && matchesFilter(film.villain_actor, filters.villainType)
+      && matchesFilter(film.conflict_scale, filters.conflictScale);
+  });
+}
+
+function matchesYearRange(year, minimumYear, maximumYear) {
+  return year !== null && year !== undefined && year >= minimumYear && year <= maximumYear;
+}
+
+function matchesFilter(value, selectedValue) {
+  return selectedValue === "" || (value !== null && value !== undefined && String(value) === selectedValue);
 }
 
 function showResultCount(element, count) {

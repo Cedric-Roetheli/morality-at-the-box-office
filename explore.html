@@ -32,9 +32,76 @@
       </header>
 
       <section class="film-explorer" aria-label="Films">
-        <div class="film-search">
-          <label for="film-search">Search films</label>
-          <input id="film-search" type="search" placeholder="Search by title" autocomplete="off" data-film-search>
+        <div class="film-controls">
+          <div class="film-controls__primary">
+            <div class="film-control film-search">
+              <label for="film-search">Search films</label>
+              <input id="film-search" type="search" placeholder="Search by title" autocomplete="off" data-film-search>
+            </div>
+            <div class="film-control film-year-range" role="group" aria-labelledby="film-year-range-label">
+              <div class="film-year-range__header">
+                <span id="film-year-range-label">Year range</span>
+                <output for="film-year-min film-year-max" data-film-year-output aria-live="polite">1977–2025</output>
+              </div>
+              <div class="film-year-range__sliders">
+                <div class="film-year-range__slider">
+                  <label for="film-year-min">Minimum year</label>
+                  <input id="film-year-min" type="range" min="1977" max="2025" value="1977" data-film-year-min>
+                </div>
+                <div class="film-year-range__slider">
+                  <label for="film-year-max">Maximum year</label>
+                  <input id="film-year-max" type="range" min="1977" max="2025" value="2025" data-film-year-max>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="film-controls__secondary">
+            <div class="film-control">
+              <label for="film-moral-scope">Moral Scope</label>
+              <select id="film-moral-scope" data-film-moral-scope>
+                <option value="">All moral scope scores</option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+              </select>
+            </div>
+            <div class="film-control">
+              <label for="film-victim-level">Victim Level</label>
+              <select id="film-victim-level" data-film-victim-level>
+                <option value="">All victim levels</option>
+                <option value="0">0 — Individual</option>
+                <option value="1">1 — Small group</option>
+                <option value="2">2 — Community / nation</option>
+                <option value="3">3 — Humanity / planet</option>
+              </select>
+            </div>
+            <div class="film-control">
+              <label for="film-hero-type">Hero Type</label>
+              <select id="film-hero-type" data-film-hero-type>
+                <option value="">All hero types</option>
+              </select>
+            </div>
+            <div class="film-control">
+              <label for="film-villain-type">Villain Type</label>
+              <select id="film-villain-type" data-film-villain-type>
+                <option value="">All villain types</option>
+              </select>
+            </div>
+            <div class="film-control">
+              <label for="film-conflict-scale">Conflict Scale</label>
+              <select id="film-conflict-scale" data-film-conflict-scale>
+                <option value="">All conflict scales</option>
+                <option value="0">0 — Local</option>
+                <option value="1">1 — National</option>
+                <option value="2">2 — International</option>
+                <option value="3">3 — Global / planetary</option>
+              </select>
+            </div>
+          </div>
         </div>
         <p class="film-result-count" data-film-result-count aria-live="polite" hidden></p>
         <ul class="film-list" data-film-list>
