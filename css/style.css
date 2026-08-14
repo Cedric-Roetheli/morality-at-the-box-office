@@ -181,12 +181,23 @@ h1 {
 }
 
 .film-list__item {
+  border-bottom: 1px solid var(--border);
+}
+
+.film-list__link {
   display: grid;
   grid-template-columns: minmax(14rem, 2fr) minmax(24rem, 3fr);
   align-items: center;
   padding-block: 1.5rem;
-  border-bottom: 1px solid var(--border);
   gap: 2rem;
+  text-decoration: none;
+}
+
+.film-list__link:hover .film-list__title {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25rem;
 }
 
 .film-list__title {
@@ -228,6 +239,176 @@ h1 {
   color: #8a2f2a;
 }
 
+.back-link {
+  display: inline-block;
+  margin-bottom: 3rem;
+  color: var(--accent);
+  font-weight: 700;
+  text-underline-offset: 0.25rem;
+}
+
+.film-detail__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
+  align-items: start;
+  gap: 4rem;
+}
+
+.film-detail__heading {
+  min-width: 0;
+}
+
+.narrative-structure {
+  min-width: 0;
+}
+
+.narrative-structure h2 {
+  margin: 0 0 1.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.375rem;
+  line-height: 1.3;
+}
+
+.narrative-triangle__top {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 2rem;
+}
+
+.narrative-triangle__top .narrative-triangle__vertex:last-child {
+  text-align: right;
+}
+
+.narrative-triangle__vertex {
+  min-width: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.narrative-triangle__role {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.narrative-triangle__vertex strong {
+  font-weight: 700;
+}
+
+.narrative-triangle__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-block: 0.25rem -0.75rem;
+  overflow: visible;
+}
+
+.narrative-triangle__edge {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.25;
+  opacity: 0.45;
+  vector-effect: non-scaling-stroke;
+}
+
+.narrative-triangle__point {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.narrative-triangle__edge-label {
+  fill: var(--muted);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.narrative-triangle__victim {
+  width: min(100%, 24rem);
+  margin-inline: auto;
+  text-align: center;
+}
+
+.film-detail__sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 4rem;
+  border-top: 1px solid var(--border);
+  column-gap: 4rem;
+}
+
+.film-detail__section {
+  padding-block: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.film-detail__section h2 {
+  margin: 0 0 1.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.375rem;
+  line-height: 1.3;
+}
+
+.film-detail__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  gap: 1.5rem;
+}
+
+.film-detail__fact dt {
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.film-detail__fact dd {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.film-detail__fact--primary {
+  grid-column: 1 / -1;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.film-detail__fact--primary dd {
+  color: var(--accent);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3.5rem;
+  line-height: 1;
+}
+
+.film-detail__status {
+  margin: 0;
+  padding-block: 1.5rem;
+  border-block: 1px solid var(--border);
+  color: var(--muted);
+}
+
+@media (max-width: 52rem) {
+  .film-detail__header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3rem;
+  }
+
+  .narrative-structure {
+    width: min(100%, 30rem);
+  }
+}
+
 @media (max-width: 42rem) {
   .site-header__inner {
     align-items: flex-start;
@@ -258,12 +439,29 @@ h1 {
     margin-top: 3rem;
   }
 
-  .film-list__item {
+  .film-list__link {
     grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
   }
 
   .film-list__facts {
     gap: 1rem;
+  }
+
+  .narrative-triangle__top {
+    gap: 1rem;
+  }
+
+  .narrative-triangle__edge-label {
+    font-size: 13px;
+  }
+
+  .back-link {
+    margin-bottom: 2rem;
+  }
+
+  .film-detail__sections {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 3rem;
   }
 }

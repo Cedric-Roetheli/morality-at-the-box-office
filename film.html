@@ -6,7 +6,7 @@
     <meta name="description" content="Film details from Morality at the Box Office.">
     <title>Film | Morality at the Box Office</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/main.js" defer></script>
+    <script src="js/film.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -25,10 +25,10 @@
     </header>
 
     <main id="main-content" class="page-shell">
-      <header class="page-intro">
-        <p class="eyebrow">Film</p>
-        <h1>Film details</h1>
-      </header>
+      <a class="back-link" href="explore.html">Back to Explore</a>
+      <div data-film-detail aria-live="polite">
+        <p class="film-detail__status">Loading film...</p>
+      </div>
     </main>
   </body>
 </html>

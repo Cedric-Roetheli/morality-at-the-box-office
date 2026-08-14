@@ -57,10 +57,13 @@ function renderFilms(container, films) {
 
 function createFilmItem(film) {
   const item = document.createElement("li");
+  const link = document.createElement("a");
   const title = document.createElement("h2");
   const facts = document.createElement("dl");
 
   item.className = "film-list__item";
+  link.className = "film-list__link";
+  link.href = `film.html?id=${encodeURIComponent(film.id)}`;
   title.className = "film-list__title";
   title.textContent = displayValue(film.title);
   facts.className = "film-list__facts";
@@ -70,7 +73,8 @@ function createFilmItem(film) {
     createFilmFact("Moral scope index", film.moral_scope_index),
   );
 
-  item.append(title, facts);
+  link.append(title, facts);
+  item.append(link);
   return item;
 }
 
