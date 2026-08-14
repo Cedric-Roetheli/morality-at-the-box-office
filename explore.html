@@ -32,9 +32,14 @@
       </header>
 
       <section class="film-explorer" aria-label="Films">
-        <div class="film-list" data-film-list aria-live="polite">
-          <p class="film-list__status">Loading films...</p>
+        <div class="film-search">
+          <label for="film-search">Search films</label>
+          <input id="film-search" type="search" placeholder="Search by title" autocomplete="off" data-film-search>
         </div>
+        <p class="film-result-count" data-film-result-count aria-live="polite" hidden></p>
+        <ul class="film-list" data-film-list>
+          <li class="film-list__status">Loading films...</li>
+        </ul>
       </section>
     </main>
   </body>

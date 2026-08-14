@@ -1,12 +1,14 @@
 "use strict";
 
 const filmList = document.querySelector("[data-film-list]");
+const filmSearch = document.querySelector("[data-film-search]");
+const filmResultCount = document.querySelector("[data-film-result-count]");
 
-if (filmList) {
-  loadFilms(filmList);
+if (filmList && filmSearch && filmResultCount) {
+  loadFilms(filmList, filmSearch, filmResultCount);
 }
 
-async function loadFilms(container) {
+async function loadFilms(container, searchInput, resultCount) {
   try {
     const response = await fetch("data/films.json");
 
@@ -21,7 +23,14 @@ async function loadFilms(container) {
     }
 
     films.sort((first, second) => first.year - second.year || first.rank - second.rank);
-    renderFilms(container, films);
+    const updateResults = () => {
+      const matchingFilms = filterFilms(films, searchInput.value);
+      renderFilms(container, matchingFilms);
+      showResultCount(resultCount, matchingFilms.length);
+    };
+
+    searchInput.addEventListener("input", updateResults);
+    updateResults();
   } catch (error) {
     console.error(error);
     showLoadError(container);
@@ -29,16 +38,21 @@ async function loadFilms(container) {
 }
 
 function renderFilms(container, films) {
-  const list = document.createElement("ul");
   const fragment = document.createDocumentFragment();
-  list.className = "film-list";
+
+  if (films.length === 0) {
+    const message = document.createElement("li");
+    message.className = "film-list__status";
+    message.textContent = "No films found.";
+    container.replaceChildren(message);
+    return;
+  }
 
   for (const film of films) {
     fragment.append(createFilmItem(film));
   }
 
-  list.append(fragment);
-  container.replaceWith(list);
+  container.replaceChildren(fragment);
 }
 
 function createFilmItem(film) {
@@ -77,8 +91,18 @@ function displayValue(value) {
   return value ?? "Not available";
 }
 
+function filterFilms(films, searchTerm) {
+  const normalizedSearch = searchTerm.trim().toLocaleLowerCase();
+  return films.filter((film) => film.title.toLocaleLowerCase().includes(normalizedSearch));
+}
+
+function showResultCount(element, count) {
+  element.textContent = `${count} ${count === 1 ? "film" : "films"}`;
+  element.hidden = false;
+}
+
 function showLoadError(container) {
-  const message = document.createElement("p");
+  const message = document.createElement("li");
   message.className = "film-list__status film-list__status--error";
   message.setAttribute("role", "alert");
   message.textContent = "The film data could not be loaded. Please try again later.";
