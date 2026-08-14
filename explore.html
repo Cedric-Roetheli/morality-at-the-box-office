@@ -26,10 +26,16 @@
 
     <main id="main-content" class="page-shell">
       <header class="page-intro">
-        <p class="eyebrow">980 films</p>
-        <h1>Explore the films</h1>
+        <p class="eyebrow">Film explorer</p>
+        <h1>Explore 980 films</h1>
         <p class="lede">The highest-grossing films worldwide, viewed across nearly five decades.</p>
       </header>
+
+      <section class="film-explorer" aria-label="Films">
+        <div class="film-list" data-film-list aria-live="polite">
+          <p class="film-list__status">Loading films...</p>
+        </div>
+      </section>
     </main>
   </body>
 </html>

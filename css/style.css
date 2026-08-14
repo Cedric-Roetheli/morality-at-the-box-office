@@ -135,6 +135,65 @@ h1 {
   line-height: 1.6;
 }
 
+.film-explorer {
+  margin-top: 4rem;
+}
+
+.film-list {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.film-list__item {
+  display: grid;
+  grid-template-columns: minmax(14rem, 2fr) minmax(24rem, 3fr);
+  align-items: center;
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  gap: 2rem;
+}
+
+.film-list__title {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.375rem;
+  line-height: 1.3;
+}
+
+.film-list__facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  gap: 1.5rem;
+}
+
+.film-list__fact dt {
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.film-list__fact dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.film-list__status {
+  margin: 0;
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.film-list__status--error {
+  color: #8a2f2a;
+}
+
 @media (max-width: 42rem) {
   .site-header__inner {
     align-items: flex-start;
@@ -159,5 +218,18 @@ h1 {
 
   .lede {
     font-size: 1.125rem;
+  }
+
+  .film-explorer {
+    margin-top: 3rem;
+  }
+
+  .film-list__item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .film-list__facts {
+    gap: 1rem;
   }
 }
