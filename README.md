@@ -8,7 +8,7 @@ An interactive website based on the bachelor thesis *Morality at the Box Office:
 - **Trends** — presents four interactive trend charts.
 - **Explore** — provides a searchable and filterable film explorer.
 - **Film detail pages** — show each film's narrative roles, scores, and Hero–Villain–Victim triangle.
-- **Paper** — reserved for the bachelor thesis PDF, which will be added later.
+- **Paper** — links to the final public bachelor thesis PDF.
 
 ## Current functionality
 
@@ -39,8 +39,14 @@ No backend, database, framework, or build step is required.
 - `data/films.json` — processed film data loaded by the website
 - `source_data/` — source research CSV
 - `scripts/prepare_data.py` — CSV-to-JSON preprocessing script
-- `paper/` — location for the thesis PDF when it is added
+- `paper/` — public thesis PDF
 - `requirements.txt` — pinned Python preprocessing dependencies
+
+## Thesis and replication
+
+The Paper page links to the final public thesis PDF at `paper/Roetheli_BA_2026_public.pdf`.
+
+The analysis pipeline and replication code are available in the [boxoffice-analysis-pipeline repository](https://github.com/Cedric-Roetheli/boxoffice-analysis-pipeline).
 
 ## Local development
 
